@@ -18,6 +18,44 @@ firewall {
             protocol all
         }
     }
+    name WAN_IN {
+        default-action drop
+        description "WAN to internal"
+        rule 10 {
+            action accept
+            state {
+                established enable
+                related enable
+            }
+            description "Allow established/related"
+        }
+        rule 20 {
+            action drop
+            state {
+                invalid enable
+            }
+            description "Drop invalid state"
+        }
+    }
+    name WAN_LOCAL {
+        default-action drop
+        description "WAN to router"
+        rule 10 {
+            action accept
+            state {
+                established enable
+                related enable
+            }
+            description "Allow established/related"
+        }
+        rule 20 {
+            action drop
+            state {
+                invalid enable
+            }
+            description "Drop invalid state"
+        }
+    }
     receive-redirects disable
     send-redirects enable
     source-validation disable
@@ -78,12 +116,21 @@ interfaces {
         speed auto
     }
     ethernet eth4 {
-        disable
+        speed auto
         duplex auto
+        address dhcp
+        description Internet
         poe {
             output off
         }
-        speed auto
+        firewall {
+            in {
+                name WAN_IN
+            }
+            local {
+                name WAN_LOCAL
+            }
+        }
     }
     loopback lo {
     }
@@ -95,7 +142,7 @@ service {
     dhcp-server {
         disabled false
         hostfile-update disable
-        shared-network-name LAN-A {
+        shared-network-name LAN-ADM {
             authoritative disable
             subnet 10.0.160.0/24 {
                 default-router 10.0.160.254
@@ -113,6 +160,16 @@ service {
                 lease 86400
                 start 10.0.150.50 {
                     stop 10.0.150.150
+                }
+            }
+        }
+        shared-network-name LAN-HARD {
+            authoritative disable
+            subnet 10.0.100.0/24 {
+                default-router 10.0.100.254
+                lease 86400
+                start 10.0.100.50 {
+                    stop 10.0.100.150
                 }
             }
         }
@@ -179,10 +236,23 @@ service {
         static-arp disable
         use-dnsmasq disable
     }
+    dns {
+        forwarding {
+            cache-size 150
+            listen-on eth0
+        }
+    }
     gui {
         http-port 80
         https-port 443
         older-ciphers enable
+    }
+    nat {
+        rule 5010 {
+            outbound-interface eth4
+            type masquerade
+            description "masquerade for WAN"
+        }
     }
     ssh {
         port 22
