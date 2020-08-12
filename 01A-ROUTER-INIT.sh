@@ -52,7 +52,7 @@ entrypoint() {
     configure_router
     SUCCESS=$?
     if [ $SUCCESS -ne 0 ]; then
-        exit 11
+        return 11
     fi
 
 }
@@ -69,6 +69,7 @@ EOFB
     \$CW begin
     \$CW load
     \$CW commit
+    \$CW save
     \$CW end
 EOFA
     LOGIN_SUCCESS=$?

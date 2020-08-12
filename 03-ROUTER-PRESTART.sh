@@ -31,7 +31,7 @@ entrypoint() {
     configure_router $1 $2 $3 $4 $5 $6
     SUCCESS=$?
     if [ $SUCCESS -ne 0 ]; then
-        exit 11
+        return 11
     fi
 
 }
@@ -43,6 +43,8 @@ configure_router() {
     STATION=0
     for NUM in "$@" 
     do
+        # The `expr $VAL + 0` is a hacky way to remove leading zeroes
+        NUM=`expr $NUM + 0`
         NUM=`printf "%04d\n" $NUM`
         if [ $STATION -lt 3 ]; then
             STNAME="RED"`expr $STATION + 1`
@@ -53,10 +55,14 @@ configure_router() {
         fi
         IP_FIRST=`echo $NUM | cut -c1-2`
         IP_SECOND=`echo $NUM | cut -c3-4`
-        IP_MIDDLE=`printf %d $IP_FIRST`.`printf %d $IP_SECOND`
+        IP_MIDDLE=`expr $IP_FIRST + 0`.`expr $IP_SECOND + 0`
         COMMANDS=$COMMANDS"
             \$CW delete interfaces ethernet eth0 vif $VLAN
+            \$CW set interfaces ethernet eth0 vif $VLAN description $STNAME
             \$CW set interfaces ethernet eth0 vif $VLAN address 10.$IP_MIDDLE.254/24
+            \$CW set interfaces ethernet eth0 vif $VLAN firewall in name TEAM_TO_FMS
+            \$CW set interfaces ethernet eth0 vif $VLAN firewall out name FMS_TO_TEAM
+            \$CW set interfaces ethernet eth0 vif $VLAN firewall local name TEAM_ROUTER
             \$CW delete service dhcp-server shared-network-name $STNAME
             \$CW set service dhcp-server shared-network-name $STNAME subnet 10.$IP_MIDDLE.0/24 start 10.$IP_MIDDLE.50 stop 10.$IP_MIDDLE.150
             \$CW set service dhcp-server shared-network-name $STNAME subnet 10.$IP_MIDDLE.0/24 default-router 10.$IP_MIDDLE.254

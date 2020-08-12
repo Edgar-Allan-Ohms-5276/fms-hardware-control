@@ -5,18 +5,35 @@ firewall {
     ipv6-src-route disable
     ip-src-route disable
     log-martians enable
-    name TEAM-NO-ROUTE {
+    name TEAM_TO_FMS {
+        description "Allowed routes for team VLANs to FMS"
         default-action reject
-        description "No routing between team VLANS"
-        rule 1 {
+        enable-default-log
+        rule 10 {
             action accept
-            description "Allow to FMS"
+            log disable
+            description "Allowed to connect to FMS"
             destination {
                 address 10.0.100.5
             }
-            log disable
-            protocol all
         }
+    }
+    name FMS_TO_TEAM {
+        description "Allowed routes for team VLANs from FMS"
+        default-action reject
+        enable-default-log
+        rule 10 {
+            action accept
+            log disable
+            description "Allowed to connect from FMS"
+            source {
+                address 10.0.100.5
+            }
+        }
+    }
+    name TEAM_ROUTER {
+        description "Disable router endpoint on VLANs"
+        default-action drop
     }
     name WAN_IN {
         default-action drop
@@ -63,33 +80,99 @@ firewall {
 }
 interfaces {
     ethernet eth0 {
-        address 192.168.1.1/24
         address 10.0.100.254/24
+        address 192.168.1.1/24
         duplex auto
         speed auto
         vif 11 {
             address 10.0.111.254/24
-            description "Red 1"
+            description "RED1"
+            firewall {
+                in {
+                    name TEAM_TO_FMS
+                }
+                out {
+                    name FMS_TO_TEAM
+                }
+                local {
+                    name TEAM_ROUTER
+                }
+            }
         }
         vif 12 {
             address 10.0.112.254/24
-            description "Red 2"
+            description "RED2"
+            firewall {
+                in {
+                    name TEAM_TO_FMS
+                }
+                out {
+                    name FMS_TO_TEAM
+                }
+                local {
+                    name TEAM_ROUTER
+                }
+            }
         }
         vif 13 {
             address 10.0.113.254/24
-            description "Red 3"
+            description "RED3"
+            firewall {
+                in {
+                    name TEAM_TO_FMS
+                }
+                out {
+                    name FMS_TO_TEAM
+                }
+                local {
+                    name TEAM_ROUTER
+                }
+            }
         }
         vif 21 {
             address 10.0.121.254/24
-            description "Blue 1"
+            description "BLUE1"
+            firewall {
+                in {
+                    name TEAM_TO_FMS
+                }
+                out {
+                    name FMS_TO_TEAM
+                }
+                local {
+                    name TEAM_ROUTER
+                }
+            }
         }
         vif 22 {
             address 10.0.122.254/24
-            description "Blue 2"
+            description "BLUE2"
+            firewall {
+                in {
+                    name TEAM_TO_FMS
+                }
+                out {
+                    name FMS_TO_TEAM
+                }
+                local {
+                    name TEAM_ROUTER
+                }
+            }
         }
         vif 23 {
             address 10.0.123.254/24
-            description "Blue 3"
+            description "BLUE3"
+            firewall {
+                in {
+                    name TEAM_TO_FMS
+                }
+                out {
+                    name FMS_TO_TEAM
+                }
+                local {
+                    name TEAM_ROUTER
+                }
+            }
         }
         vif 50 {
             address 10.0.150.254/24
@@ -143,7 +226,7 @@ service {
         disabled false
         hostfile-update disable
         shared-network-name LAN-ADM {
-            authoritative disable
+            authoritative enable
             subnet 10.0.160.0/24 {
                 default-router 10.0.160.254
                 dns-server 10.0.160.254
@@ -154,7 +237,7 @@ service {
             }
         }
         shared-network-name LAN-SAL {
-            authoritative disable
+            authoritative enable
             subnet 10.0.150.0/24 {
                 default-router 10.0.150.254
                 lease 86400
@@ -164,9 +247,10 @@ service {
             }
         }
         shared-network-name LAN-HARD {
-            authoritative disable
+            authoritative enable
             subnet 10.0.100.0/24 {
                 default-router 10.0.100.254
+                dns-server 10.0.100.254
                 lease 86400
                 start 10.0.100.50 {
                     stop 10.0.100.150
@@ -174,7 +258,7 @@ service {
             }
         }
         shared-network-name RED1 {
-            authoritative disable
+            authoritative enable
             subnet 10.0.111.0/24 {
                 default-router 10.0.111.254
                 lease 86400
@@ -184,7 +268,7 @@ service {
             }
         }
         shared-network-name RED2 {
-            authoritative disable
+            authoritative enable
             subnet 10.0.112.0/24 {
                 default-router 10.0.112.254
                 lease 86400
@@ -194,7 +278,7 @@ service {
             }
         }
         shared-network-name RED3 {
-            authoritative disable
+            authoritative enable
             subnet 10.0.113.0/24 {
                 default-router 10.0.113.254
                 lease 86400
@@ -204,7 +288,7 @@ service {
             }
         }
         shared-network-name BLUE1 {
-            authoritative disable
+            authoritative enable
             subnet 10.0.121.0/24 {
                 default-router 10.0.121.254
                 lease 86400
@@ -214,7 +298,7 @@ service {
             }
         }
         shared-network-name BLUE2 {
-            authoritative disable
+            authoritative enable
             subnet 10.0.122.0/24 {
                 default-router 10.0.122.254
                 lease 86400
@@ -224,7 +308,7 @@ service {
             }
         }
         shared-network-name BLUE3 {
-            authoritative disable
+            authoritative enable
             subnet 10.0.123.0/24 {
                 default-router 10.0.123.254
                 lease 86400

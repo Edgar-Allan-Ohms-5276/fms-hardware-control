@@ -55,13 +55,13 @@ entrypoint() {
     ping_router $1
     PING_SUCCESS=$?
     if [ $PING_SUCCESS -ne 0 ]; then
-        exit 11
+        return 11
     fi
 
     login_to_router
     LOGIN_SUCCESS=$?
     if [ $LOGIN_SUCCESS -ne 0 ]; then
-        exit 12
+        return 12
     fi
 
 }
