@@ -1,4 +1,0 @@
-{
-    "username": "$CONTROLLER_USERNAME",
-    "password": "${CONTROLLER_PASSWORD}"
-}
