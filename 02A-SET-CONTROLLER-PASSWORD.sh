@@ -7,7 +7,7 @@ DIR=$(dirname "$0")
 __usage="
     This script configures all available hardware from UniFi controller 
 
-    Usage: 02A-SET-PASSWORD.sh PASSWORD
+    Usage: 02A-SET-CONTROLLER-PASSWORD.sh PASSWORD
 
     Parameters:
         0th: The new password to set
