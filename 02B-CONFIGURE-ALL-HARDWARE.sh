@@ -110,6 +110,7 @@ get_globals() {
     BLUE1_PORTCONF_ID="unset"
     BLUE2_PORTCONF_ID="unset"
     BLUE3_PORTCONF_ID="unset"
+    ADM_PORTCONF_ID="unset"
 
     FIELD_WLAN_ID="unset"
     EXTERNAL_WLAN_ID="unset"
@@ -120,34 +121,37 @@ get_globals() {
         PORTCONF=`echo $PORTCONFDATA | jq --argjson i $i '.[$i]'`
         PORTCONF_ID=`echo $PORTCONF | jq -r ._id`
         if [ "`echo $PORTCONF | jq -r .name`" = "Red Side" ]; then
-             RED_SIDE_PORTCONF_ID=$PORTCONF_ID
+            RED_SIDE_PORTCONF_ID=$PORTCONF_ID
         fi
         if [ "`echo $PORTCONF | jq -r .name`" = "Blue Side" ]; then
-             BLUE_SIDE_PORTCONF_ID=$PORTCONF_ID
+            BLUE_SIDE_PORTCONF_ID=$PORTCONF_ID
         fi
         if [ "`echo $PORTCONF | jq -r .name`" = "All" ]; then
-             ALL_PORTCONF_ID=$PORTCONF_ID
+            ALL_PORTCONF_ID=$PORTCONF_ID
         fi
         if [ "`echo $PORTCONF | jq -r .name`" = "Disabled" ]; then
-             DISABLED_PORTCONF_ID=$PORTCONF_ID
+            DISABLED_PORTCONF_ID=$PORTCONF_ID
         fi
         if [ "`echo $PORTCONF | jq -r .name`" = "RED1" ]; then
-             RED1_PORTCONF_ID=$PORTCONF_ID
+            RED1_PORTCONF_ID=$PORTCONF_ID
         fi
         if [ "`echo $PORTCONF | jq -r .name`" = "RED2" ]; then
-             RED2_PORTCONF_ID=$PORTCONF_ID
+            RED2_PORTCONF_ID=$PORTCONF_ID
         fi
         if [ "`echo $PORTCONF | jq -r .name`" = "RED3" ]; then
-             RED3_PORTCONF_ID=$PORTCONF_ID
+            RED3_PORTCONF_ID=$PORTCONF_ID
         fi
         if [ "`echo $PORTCONF | jq -r .name`" = "BLUE1" ]; then
-             BLUE1_PORTCONF_ID=$PORTCONF_ID
+            BLUE1_PORTCONF_ID=$PORTCONF_ID
         fi
         if [ "`echo $PORTCONF | jq -r .name`" = "BLUE2" ]; then
-             BLUE2_PORTCONF_ID=$PORTCONF_ID
+            BLUE2_PORTCONF_ID=$PORTCONF_ID
         fi
         if [ "`echo $PORTCONF | jq -r .name`" = "BLUE3" ]; then
-             BLUE3_PORTCONF_ID=$PORTCONF_ID
+            BLUE3_PORTCONF_ID=$PORTCONF_ID
+        fi
+        if [ "`echo $PORTCONF | jq -r .name`" = "Administration" ]; then
+            ADM_PORTCONF_ID=$PORTCONF_ID
         fi
     done
 
@@ -184,8 +188,9 @@ configure_root_switch() {
       },
       {
          "port_idx":3,
-         "portconf_id": $DISABLED_PORTCONF_ID,
-         "poe_mode":"off"
+         "portconf_id": $ADM_PORTCONF_ID,
+         "poe_mode":"auto",
+         "name":"Administration 1"
       },
       {
          "port_idx":4,
@@ -218,7 +223,7 @@ configure_root_switch() {
    ]
 }
 '''
-    DATA=`jq -n --arg ALL_PORTCONF_ID $ALL_PORTCONF_ID --arg DISABLED_PORTCONF_ID $DISABLED_PORTCONF_ID --arg RED_SIDE_PORTCONF_ID $RED_SIDE_PORTCONF_ID --arg BLUE_SIDE_PORTCONF_ID $BLUE_SIDE_PORTCONF_ID "$DATA"`
+    DATA=`jq -n --arg ALL_PORTCONF_ID $ALL_PORTCONF_ID --arg DISABLED_PORTCONF_ID $DISABLED_PORTCONF_ID --arg ADM_PORTCONF_ID $ADM_PORTCONF_ID --arg RED_SIDE_PORTCONF_ID $RED_SIDE_PORTCONF_ID --arg BLUE_SIDE_PORTCONF_ID $BLUE_SIDE_PORTCONF_ID "$DATA"`
     curl -b "$COOKIEFILE" -d "$DATA" -H 'Content-Type: application/json' -X PUT -k -s https://fms.nevermore:8443/api/s/default/rest/device/$1 > /dev/null
 }
 
