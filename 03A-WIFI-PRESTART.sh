@@ -64,12 +64,12 @@ entrypoint() {
         fi
     done
 
-    create_ssid $1 $2 11
-    create_ssid $3 $4 12
-    create_ssid $5 $6 13
-    create_ssid $7 $8 21
-    create_ssid $9 $10 22
-    create_ssid $11 $12 23
+    create_ssid ${1} ${2} 11
+    create_ssid ${3} ${4} 12
+    create_ssid ${5} ${6} 13
+    create_ssid ${7} ${8} 21
+    create_ssid ${9} ${10} 22
+    create_ssid ${11} ${12} 23
 
     if [ $13 = "true" ]; then
         . $DIR/resources/wait-for-unifi-ready.sh
