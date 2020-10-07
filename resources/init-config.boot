@@ -322,6 +322,8 @@ service {
     }
     dns {
         forwarding {
+            listen-on eth0
+            listen-on eth0.60
             cache-size 150
             listen-on eth0
         }
