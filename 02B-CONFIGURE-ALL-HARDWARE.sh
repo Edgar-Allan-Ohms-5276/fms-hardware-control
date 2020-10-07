@@ -259,7 +259,7 @@ configure_red_side_switch() {
    ]
 }
 '''
-    DATA=`jq -n --arg ALL_PORTCONF_ID $ALL_PORTCONF_ID --arg DISABLED_PORTCONF_ID $DISABLED_PORTCONF_ID --arg RED1_PORTCONF_ID $RED1_PORTCONF_ID --arg RED2_PORTCONF_ID $RED1_PORTCONF_ID --arg RED3_PORTCONF_ID $RED3_PORTCONF_ID "$DATA"`
+    DATA=`jq -n --arg ALL_PORTCONF_ID $ALL_PORTCONF_ID --arg DISABLED_PORTCONF_ID $DISABLED_PORTCONF_ID --arg RED1_PORTCONF_ID $RED1_PORTCONF_ID --arg RED2_PORTCONF_ID $RED2_PORTCONF_ID --arg RED3_PORTCONF_ID $RED3_PORTCONF_ID "$DATA"`
     curl -b "$COOKIEFILE" -d "$DATA" -H 'Content-Type: application/json' -X PUT -k -s https://fms.nevermore:8443/api/s/default/rest/device/$1 > /dev/null
 }
 
@@ -295,7 +295,7 @@ configure_blue_side_switch() {
    ]
 }
 '''
-    DATA=`jq -n --arg ALL_PORTCONF_ID $ALL_PORTCONF_ID --arg DISABLED_PORTCONF_ID $DISABLED_PORTCONF_ID --arg BLUE1_PORTCONF_ID $BLUE1_PORTCONF_ID --arg BLUE2_PORTCONF_ID $BLUE1_PORTCONF_ID --arg BLUE3_PORTCONF_ID $BLUE3_PORTCONF_ID "$DATA"`
+    DATA=`jq -n --arg ALL_PORTCONF_ID $ALL_PORTCONF_ID --arg DISABLED_PORTCONF_ID $DISABLED_PORTCONF_ID --arg BLUE1_PORTCONF_ID $BLUE1_PORTCONF_ID --arg BLUE2_PORTCONF_ID $BLUE2_PORTCONF_ID --arg BLUE3_PORTCONF_ID $BLUE3_PORTCONF_ID "$DATA"`
     curl -b "$COOKIEFILE" -d "$DATA" -H 'Content-Type: application/json' -X PUT -k -s https://fms.nevermore:8443/api/s/default/rest/device/$1 > /dev/null
 }
 
