@@ -180,7 +180,7 @@ interfaces {
         }
         vif 60 {
             address 10.0.160.254/24
-            description Administration
+            description "Administration"
         }
     }
     ethernet eth1 {
