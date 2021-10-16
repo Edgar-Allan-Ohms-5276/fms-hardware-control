@@ -312,6 +312,7 @@ service {
             authoritative enable
             subnet 10.0.100.4/30 {
                 default-router 10.0.100.6
+                dns-server 10.0.100.6
                 lease 86400
                 start 10.0.100.5 {
                     stop 10.0.100.5
