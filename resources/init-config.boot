@@ -8,7 +8,6 @@ firewall {
     name TEAM_TO_FMS {
         description "Allowed routes for team VLANs to FMS"
         default-action reject
-        enable-default-log
         rule 10 {
             action accept
             log disable
@@ -21,7 +20,6 @@ firewall {
     name FMS_TO_TEAM {
         description "Allowed routes for team VLANs from FMS"
         default-action reject
-        enable-default-log
         rule 10 {
             action accept
             log disable
@@ -34,6 +32,12 @@ firewall {
     name TEAM_ROUTER {
         description "Disable router endpoint on VLANs"
         default-action drop
+        rule 10 {
+            action accept
+            log disable
+            description "Allowed to ping router"
+            protocol icmp
+        }
     }
     name WAN_IN {
         default-action drop
@@ -80,8 +84,8 @@ firewall {
 }
 interfaces {
     ethernet eth0 {
-        address 10.0.100.254/24
-        address 192.168.1.1/24
+        address 10.0.200.254/24 /* This is the native VLAN subnet (used by managed networking hardware) */
+        address 192.168.1.1/24  /* Keeps the default EdgeRouterX IP, just in case */
         duplex auto
         speed auto
         vif 11 {
@@ -174,11 +178,27 @@ interfaces {
                 }
             }
         }
-        vif 50 {
+        vif 100 {
+            address 10.0.100.6/30 /* This VLAN has only the FMS (10.0.100.5) and the router on it */
+            description "FMS"
+        }
+        vif 120 {
+            address dhcp
+            description "Internet"
+            firewall {
+                in {
+                    name WAN_IN
+                }
+                local {
+                    name WAN_LOCAL
+                }
+            }
+        }
+        vif 150 {
             address 10.0.150.254/24
             description "Sensors and Lights"
         }
-        vif 60 {
+        vif 160 {
             address 10.0.160.254/24
             description "Administration"
         }
@@ -199,21 +219,13 @@ interfaces {
         speed auto
     }
     ethernet eth4 {
+        disable
         speed auto
         duplex auto
-        address dhcp
-        description Internet
         poe {
             output off
         }
-        firewall {
-            in {
-                name WAN_IN
-            }
-            local {
-                name WAN_LOCAL
-            }
-        }
+        
     }
     loopback lo {
     }
@@ -225,35 +237,14 @@ service {
     dhcp-server {
         disabled false
         hostfile-update disable
-        shared-network-name LAN-ADM {
+        shared-network-name LAN-NATIVE {
             authoritative enable
-            subnet 10.0.160.0/24 {
-                default-router 10.0.160.254
-                dns-server 10.0.160.254
+            subnet 10.0.200.0/24 {
+                default-router 10.0.200.254
+                dns-server 10.0.200.254
                 lease 86400
-                start 10.0.160.50 {
-                    stop 10.0.160.150
-                }
-            }
-        }
-        shared-network-name LAN-SAL {
-            authoritative enable
-            subnet 10.0.150.0/24 {
-                default-router 10.0.150.254
-                lease 86400
-                start 10.0.150.50 {
-                    stop 10.0.150.150
-                }
-            }
-        }
-        shared-network-name LAN-HARD {
-            authoritative enable
-            subnet 10.0.100.0/24 {
-                default-router 10.0.100.254
-                dns-server 10.0.100.254
-                lease 86400
-                start 10.0.100.50 {
-                    stop 10.0.100.150
+                start 10.0.200.50 {
+                    stop 10.0.200.150
                 }
             }
         }
@@ -317,15 +308,47 @@ service {
                 }
             }
         }
+        shared-network-name LAN-FMS {
+            authoritative enable
+            subnet 10.0.100.4/30 {
+                default-router 10.0.100.6
+                lease 86400
+                start 10.0.100.5 {
+                    stop 10.0.100.5
+                }
+            }
+        }
+        shared-network-name LAN-SAL {
+            authoritative enable
+            subnet 10.0.150.0/24 {
+                default-router 10.0.150.254
+                lease 86400
+                start 10.0.150.50 {
+                    stop 10.0.150.150
+                }
+            }
+        }
+        shared-network-name LAN-ADM {
+            authoritative enable
+            subnet 10.0.160.0/24 {
+                default-router 10.0.160.254
+                dns-server 10.0.160.254
+                lease 86400
+                start 10.0.160.50 {
+                    stop 10.0.160.150
+                }
+            }
+        }
+
         static-arp disable
         use-dnsmasq disable
     }
     dns {
         forwarding {
-            listen-on eth0
-            listen-on eth0.60
+            listen-on eth0       /* Native VLAN (Networking Hardware) */
+            listen-on eth0.100   /* FMS                               */
+            listen-on eth0.160   /* Administration VLAN               */
             cache-size 150
-            listen-on eth0
         }
     }
     gui {
@@ -334,10 +357,10 @@ service {
         older-ciphers enable
     }
     nat {
-        rule 5010 {
-            outbound-interface eth4
+        rule 10 {
+            outbound-interface eth0.120
             type masquerade
-            description "masquerade for WAN"
+            description "Masquerade for WAN"
         }
     }
     ssh {
@@ -380,8 +403,7 @@ system {
         }
         host-name router.nevermore {
             alias router.nevermore
-            inet 10.0.100.254
-            inet 192.168.1.1
+            inet 10.0.200.254
         }
     }
     syslog {
