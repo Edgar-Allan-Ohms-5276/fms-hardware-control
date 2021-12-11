@@ -376,7 +376,7 @@ system {
     login {
         user nevermore {
             authentication {
-                plaintext-password "yeetbread"
+                plaintext-password "$DESIRED_PASSWORD"
             }
             level admin
         }
