@@ -84,8 +84,10 @@ firewall {
 }
 interfaces {
     ethernet eth0 {
-        address 10.0.200.254/24 /* This is the native VLAN subnet (used by managed networking hardware) */
-        address 192.168.1.1/24  /* Keeps the default EdgeRouterX IP, just in case */
+        address 10.0.200.254/24 
+        /* This is the native VLAN subnet (used by managed networking hardware) */
+        address 192.168.1.1/24
+        /* Keeps the default EdgeRouterX IP, just in case */
         duplex auto
         speed auto
         vif 11 {
@@ -179,20 +181,9 @@ interfaces {
             }
         }
         vif 100 {
-            address 10.0.100.6/30 /* This VLAN has only the FMS (10.0.100.5) and the router on it */
+            /* This VLAN has only the FMS (10.0.100.5) and the router on it */
+            address 10.0.100.6/30
             description "FMS"
-        }
-        vif 120 {
-            address dhcp
-            description "Internet"
-            firewall {
-                in {
-                    name WAN_IN
-                }
-                local {
-                    name WAN_LOCAL
-                }
-            }
         }
         vif 150 {
             address 10.0.150.254/24
@@ -219,11 +210,19 @@ interfaces {
         speed auto
     }
     ethernet eth4 {
-        disable
         speed auto
         duplex auto
         poe {
             output off
+        }
+        address dhcp
+        firewall {
+            in {
+                name WAN_IN
+            }
+            local {
+                name WAN_LOCAL
+            }
         }
         
     }
@@ -313,7 +312,7 @@ service {
             subnet 10.0.100.4/30 {
                 default-router 10.0.100.6
                 dns-server 10.0.100.6
-                lease 86400
+                lease 60
                 start 10.0.100.5 {
                     stop 10.0.100.5
                 }
@@ -346,9 +345,12 @@ service {
     }
     dns {
         forwarding {
-            listen-on eth0       /* Native VLAN (Networking Hardware) */
-            listen-on eth0.100   /* FMS                               */
-            listen-on eth0.160   /* Administration VLAN               */
+            /* Native VLAN (Networking Hardware) */
+            listen-on eth0
+            listen-on eth0.100
+            /* FMS */
+            listen-on eth0.160
+            /* Administration VLAN */
             cache-size 150
         }
     }
@@ -358,8 +360,8 @@ service {
         older-ciphers enable
     }
     nat {
-        rule 10 {
-            outbound-interface eth0.120
+        rule 5010 {
+            outbound-interface eth4
             type masquerade
             description "Masquerade for WAN"
         }
@@ -374,13 +376,7 @@ system {
     login {
         user nevermore {
             authentication {
-                plaintext-password "$DESIRED_PASSWORD"
-            }
-            level admin
-        }
-        user ubnt {
-            authentication {
-                plaintext-password "$DESIRED_PASSWORD"
+                plaintext-password "yeetbread"
             }
             level admin
         }
